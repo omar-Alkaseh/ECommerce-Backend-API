@@ -87,7 +87,7 @@ The project uses **SQL Server** with Entity Framework Core.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/E-Commerce---back-end-Api.git
+git clone https://github.com/omar-Alkaseh/E-Commerce---back-end-Api.git
 ```
 
 2. Open the solution:
