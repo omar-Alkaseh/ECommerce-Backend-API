@@ -55,7 +55,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -243,6 +243,8 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "ECommerce API v1");
     });
+    app.UseDeveloperExceptionPage();
+    app.UseStatusCodePages();
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();

@@ -10,6 +10,7 @@ using Domain.Entities;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Application.Services
 {
@@ -26,10 +27,13 @@ namespace Application.Services
         private readonly ILogger<ProductService> _logger;
         private readonly IAuditService _auditService;
 
+        private readonly HybridCache _cache;
+        private const string cacheKey = "products";
+
         public ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository, IUnitOfWork unitOfWork,
             IValidator<CreateProductDto> createValidator, IValidator<UpdateProductDto> updateValidator, ISkuGenerator skuGenerator,
             ISlugGenerator slugGenerator, IValidator<PatchProductDto> patchValidator, ILogger<ProductService> logger,
-            IAuditService auditService)
+            IAuditService auditService, HybridCache cache)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
@@ -41,6 +45,7 @@ namespace Application.Services
             _patchValidator = patchValidator;
             _logger = logger;
             _auditService = auditService;
+            _cache = cache;
         }
 
 
@@ -129,6 +134,8 @@ namespace Application.Services
             await _productRepository.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
 
+            await _cache.RemoveAsync("products");
+
             await _auditService.LogAsync(
                 AuditActions.ProductCreated,
                 AuditEntities.Product,
@@ -167,15 +174,17 @@ namespace Application.Services
             _productRepository.Delete(product);
             await _unitOfWork.SaveChangesAsync();
 
+            await _cache.RemoveAsync("products");
+
             _logger.LogInformation("Product {ProductId} deleted", productId);
         }
 
-        public async Task<IEnumerable<ProductDto>> GetActiveProductsAsync()
-        {
-            var activeProducts = await _productRepository.GetActiveProductsAsync();
-
-            return activeProducts.ToDtoList();
-        }
+        public async Task<IEnumerable<ProductDto>> GetActiveProductsAsync() =>
+            await _cache.GetOrCreateAsync(cacheKey, async ct =>
+            {
+                var activeProducts = await _productRepository.GetActiveProductsAsync();
+                return activeProducts.ToDtoList();
+            }, tags: ["Active-Products"]); 
 
         public async Task<IEnumerable<ProductDto>> GetByCategoryIdAsync(int categoryId)
         {
@@ -281,6 +290,8 @@ namespace Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
+            await _cache.RemoveAsync("products");
+
             await _auditService.LogAsync(
                 AuditActions.ProductUpdated,
                 AuditEntities.Product,
@@ -298,12 +309,15 @@ namespace Application.Services
             return product.ToDto();
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllAsync()
-        {
-            var products = await _productRepository.GetAllWithMainImageAsync();
+        public async Task<IEnumerable<ProductDto>> GetAllAsync() =>
+            await _cache.GetOrCreateAsync(cacheKey, async ct =>
+            {
+                var products = await _productRepository.GetAllWithMainImageAsync();
 
-            return products.ToDtoList();
-        }
+                Console.WriteLine("Visited Database.");
+
+                return products.ToDtoList();
+            }, tags: ["All-Products"]);
 
         public async Task<ProductDto?> GetByIdAsync(int productId)
         {
@@ -404,6 +418,8 @@ namespace Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
+            await _cache.RemoveAsync(cacheKey);
+
             await _auditService.LogAsync(
                 AuditActions.ProductUpdated,
                 AuditEntities.Product,
@@ -421,35 +437,38 @@ namespace Application.Services
             return product.ToDto();
         }
 
-        public async Task<PaginatedResult<ProductDto>> GetPagedAsync(int pageNumber, int pageSize)
-        {
-            if (pageNumber < 1)
+        public async Task<PaginatedResult<ProductDto>> GetPagedAsync(int pageNumber, int pageSize) =>
+            await _cache.GetOrCreateAsync(cacheKey, async ct =>
             {
-                _logger.LogWarning("Product page request rejected for invalid page number {PageNumber}", pageNumber);
-                throw new BadRequestException("PageNumber must be greater than 0.");
-            }
+                if (pageNumber < 1)
+                {
+                    _logger.LogWarning("Product page request rejected for invalid page number {PageNumber}", pageNumber);
+                    throw new BadRequestException("PageNumber must be greater than 0.");
+                }
 
-            if (pageSize < 1)
-            {
-                _logger.LogWarning("Product page request rejected for invalid page size {PageSize}", pageSize);
-                throw new BadRequestException("PageSize must be greater than 0.");
-            }
+                if (pageSize < 1)
+                {
+                    _logger.LogWarning("Product page request rejected for invalid page size {PageSize}", pageSize);
+                    throw new BadRequestException("PageSize must be greater than 0.");
+                }
 
-            if (pageSize > 100)
-                pageSize = 100;
+                if (pageSize > 100)
+                    pageSize = 100;
 
-            var totalCount = await _productRepository.CountAsync();
+                var totalCount = await _productRepository.CountAsync();
 
-            var products = await _productRepository.GetPagedWithMainImageAsync(pageNumber, pageSize);
+                var products = await _productRepository.GetPagedWithMainImageAsync(pageNumber, pageSize);
 
-            return new PaginatedResult<ProductDto>
-            {
-                Items = products.ToDtoList(),
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalCount = totalCount
-            };
-        }
+                _logger.LogInformation("Visited database.");
+
+                return new PaginatedResult<ProductDto>
+                {
+                    Items = products.ToDtoList(),
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = totalCount
+                };
+            });
 
         public async Task<List<ProductDto>> GetProductsByMinimumRatingAsync(int minRating)
         {

@@ -1,0 +1,116 @@
+
+services:
+
+  # =========================
+  # ECommerce API
+  # =========================
+  ecommerce-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: ecommerce-api
+
+    ports:
+      - "5001:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ECommerceDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
+
+      ConnectionStrings__Redis: "redis:6379"
+
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+      redis:
+        condition: service_healthy
+
+    networks:
+      - ecommerce-network
+
+    restart: unless-stopped
+
+
+  # =========================
+  # SQL Server
+  # =========================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+
+    container_name: ecommerce-sqlserver
+
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
+      MSSQL_PID: Developer
+
+    ports:
+      - "1433:1433"
+
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+    networks:
+      - ecommerce-network
+
+    healthcheck:
+      test:
+        - CMD
+        - /opt/mssql-tools18/bin/sqlcmd
+        - -S
+        - localhost
+        - -U
+        - sa
+        - -P
+        - "${SA_PASSWORD}"
+        - -C
+        - -Q
+        - "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+    restart: unless-stopped
+
+
+  # =========================
+  # Redis
+  # =========================
+  redis:
+    image: redis:7-alpine
+
+    container_name: ecommerce-redis
+
+    ports:
+      - "6379:6379"
+
+    networks:
+      - ecommerce-network
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    restart: unless-stopped
+
+
+# =========================
+# Persistent Volumes
+# =========================
+volumes:
+  sqlserver_data:
+    external: true
+    name: ecommerceapi_sqlserver2025_data
+
+
+networks:
+  ecommerce-network:
+    driver: bridge

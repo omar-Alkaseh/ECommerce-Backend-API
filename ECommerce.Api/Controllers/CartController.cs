@@ -14,7 +14,6 @@ namespace ECommerce.Api.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
-
         public CartController(ICartService cartService)
         {
             _cartService = cartService;

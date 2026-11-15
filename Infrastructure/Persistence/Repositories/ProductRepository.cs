@@ -20,6 +20,8 @@ namespace Infrastructure.Persistence.Repositories
         public async Task<List<Product>> GetByCategoryIdAsync(int categoryId) =>
              await _context.Products
                 .AsNoTracking()
+                .Include(p => p.ProductImages)
+                .Include(pi => pi.Reviews)
                 .Where(p => p.CategoryId == categoryId && p.IsActive)
                 .ToListAsync();
 
@@ -30,6 +32,8 @@ namespace Infrastructure.Persistence.Repositories
         public async Task<List<Product>> GetFeaturedAsync() =>
             await _context.Products
                 .AsNoTracking()
+                .Include(p => p.ProductImages)
+                .Include(p => p.Reviews)
                 .Where(p => p.IsFeatured && p.IsActive)
                 .ToListAsync();
 
@@ -48,6 +52,7 @@ namespace Infrastructure.Persistence.Repositories
 
             return await _context.Products
                 .AsNoTracking()
+                .Include(p => p.ProductImages)
                 .Include(p => p.Reviews)
                 .Where(p =>
                     p.IsActive &&
