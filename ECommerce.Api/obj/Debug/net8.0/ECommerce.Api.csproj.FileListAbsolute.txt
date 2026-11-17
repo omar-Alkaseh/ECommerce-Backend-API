@@ -1,4 +1,3 @@
-C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\appsettings.json
 C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\ECommerce.Api.staticwebassets.runtime.json
 C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\ECommerce.Api.staticwebassets.endpoints.json
@@ -170,3 +169,13 @@ C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\obj\Debug\net8.0\refint\ECo
 C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\obj\Debug\net8.0\ECommerce.Api.pdb
 C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\obj\Debug\net8.0\ECommerce.Api.genruntimeconfig.cache
 C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\obj\Debug\net8.0\ref\ECommerce.Api.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.AspNetCore.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Extensions.Hosting.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Extensions.Logging.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Formatting.Compact.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Settings.Configuration.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Sinks.Console.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Sinks.Debug.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Sinks.File.dll
+C:\Users\HP\source\repos\ECommerce.Api\ECommerce.Api\bin\Debug\net8.0\Serilog.Sinks.Seq.dll

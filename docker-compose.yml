@@ -101,6 +101,19 @@ services:
 
     restart: unless-stopped
 
+  ecommerce.seq:
+    image: datalust/seq:latest
+    container_name: ECommerce.Seq
+    volumes:
+      - ./Containers/seq:/data
+    environment:
+      - ACCEPT_EULA=Y
+    networks:
+      - ecommerce-network
+    ports:
+      - 5341:5341
+      - 8001:80
+
 
 # =========================
 # Persistent Volumes
